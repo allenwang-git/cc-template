@@ -1,0 +1,31 @@
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("//pkg:pkg_vars.bzl", "pkg_vars")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "pkg_attributes")
+
+pkg_vars(
+    name = "pkg_vars",
+    build_setting_default = "pre-release",
+)
+
+pkg_files(
+    name = "cyclonedds-deps",
+    srcs = ["pkg-files/deps.bash"],
+    strip_prefix = "pkg-files",
+    attributes = pkg_attributes(
+        mode = "0555",
+    )
+)
+
+pkg_tar(
+    name = "cc_tar",
+    srcs = [
+        "//cc:cc_pub",
+        "//cc:cc_sub",
+        ":cyclonedds-deps",
+    ],
+    extension = "tar.gz",
+    mode = "0555", # r-xr-xr-x
+    package_file_name = "cc-pub-sub-{cc_cpu}-{compiler}-{compilation_mode}-{version}.tar.gz",
+    package_variables = ":pkg_vars",
+    visibility = ["//visibility:public"],
+)

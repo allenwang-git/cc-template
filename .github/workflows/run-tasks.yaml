@@ -1,0 +1,41 @@
+name: Run tasks
+
+on:
+  push:
+    branches:
+      - main  # Trigger the workflow when pushing to the main branch
+  pull_request:
+    branches:
+      - main  # Also trigger on pull requests targeting main branch
+
+jobs:
+  tasks:
+    runs-on: [self-hosted, X64, Linux]
+    strategy:
+      matrix:
+        task: [
+          py-test, 
+          py-cov,
+          cc-integ-test,
+          cc-tar
+        ]
+      fail-fast: true
+
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          clean: false
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          sudo apt install -y lcov &&
+          wget https://github.com/bazelbuild/bazelisk/releases/download/v1.23.0/bazelisk-amd64.deb &&
+          sudo dpkg -i bazelisk-amd64.deb &&
+          which bazelisk
+
+      # Run tasks
+      - name: Run tests
+        run: ./run ${{ matrix.task }}

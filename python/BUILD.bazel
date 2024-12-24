@@ -1,0 +1,60 @@
+load("@python_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+py_binary(
+    name = "py_pub",
+    srcs = ["pub.py"],
+    deps = [
+        requirement("cyclonedds-nightly"),
+    ],
+    main = "pub.py",
+    visibility = ["//visibility:public"],
+)
+
+
+py_binary(
+    name = "py_sub",
+    srcs = ["sub.py"],
+    deps = [
+        requirement("cyclonedds-nightly"),
+    ],
+    main = "sub.py",
+    visibility = ["//visibility:public"],
+)
+
+# Only py_library can be used to calculate code coverage
+py_library(
+    name = "add_two_ints",
+    srcs = ["add_two_ints.py"],
+    visibility = ["//visibility:public"],
+)
+
+py_test(
+    name = "unit-tests",
+    srcs = glob(["test/*.py"]),
+    deps = [
+        requirement("pytest"),
+        requirement("pytest-timeout"),
+        requirement("docker"),
+        ":add_two_ints",
+    ],
+    main = "test/test_add_two_ints.py",
+    visibility = ["//visibility:public"],
+
+)
+
+py_test(
+    name = "integration-tests",
+    srcs = glob(["test/integration/**"]),
+    deps = [
+        requirement("pytest"),
+        requirement("pytest-timeout"),
+        requirement("docker"),
+        ":py_sub",
+        ":py_pub",
+    ],
+    tags = ["no-coverage"],
+    main = "__init__.py",
+    visibility = ["//visibility:public"],
+
+)

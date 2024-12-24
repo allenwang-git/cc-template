@@ -1,0 +1,12 @@
+startup --output_user_root=.bazel
+
+## Build
+build --cxxopt -std=c++17
+
+## Coverage
+coverage --combined_report=lcov
+coverage --test_tag_filters=-no-coverage
+
+## Test
+test --test_output=all
+test --cache_test_results=no

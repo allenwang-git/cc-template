@@ -1,0 +1,86 @@
+#!/bin/bash
+
+set -e
+
+# Function to print usage
+print_help() {
+    echo "Usage: $0 <task-name>"
+    echo "Options:"
+    echo "    --list    List all available tasks."
+    echo "    --help    Print this help message."
+}
+
+# Function to list tasks
+list_tasks() {
+    if [ ! -f "$TASKS_FILE" ]; then
+        echo "Error: $TASKS_FILE not found."
+        exit 1
+    fi
+
+    echo -e "Available tasks:\n"
+    awk -F: '/^[^# ]/ { print $1 }' "$TASKS_FILE"
+}
+
+# Get the task name from the CLI argument
+TASK_NAME=$1
+
+# Path to the tasks.yaml file
+TASKS_FILE="tasks.yaml"
+
+# Check if the YAML file exists
+if [ ! -f "$TASKS_FILE" ]; then
+    echo "Error: $TASKS_FILE does not exist!"
+    exit 1
+fi
+
+# Validate arguments
+if [ "$#" -lt 1 ]; then
+    print_help
+    exit 1
+fi
+
+# Handle options
+case "$1" in
+    --list|-l)
+        list_tasks
+        exit 0
+        ;;
+    --help|-h)
+        print_help
+        exit 0
+        ;;
+esac
+
+# Extract commands for the specified task using awk
+TASK_COMMANDS=$(awk -v task="$TASK_NAME" '
+    $1 == task ":" {        # Match the task name followed by a colon
+        found = 1          # Set a flag
+        next
+    }
+    found && /^  - / {      # Look for indented lines starting with "-"
+        gsub(/^  - /, "")   # Remove the "- " prefix
+        print $0           # Print the command
+        next
+    }
+    found && /^[^ ]/ {      # Stop if a new task section begins
+        exit
+    }
+' "$TASKS_FILE")
+
+# Check if commands were found
+if [ -z "$TASK_COMMANDS" ]; then
+    echo "Error: No commands found for task '$TASK_NAME'."
+    exit 1
+fi
+
+# Now, execute all commands associated with the task
+echo "Executing commands for task: $TASK_NAME"
+
+# Loop through each line (command) and execute it
+while IFS= read -r line; do
+    echo -e "Running: $line\n"
+    eval "$line"
+done <<< "$TASK_COMMANDS"
+
+
+

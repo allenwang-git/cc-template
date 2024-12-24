@@ -1,0 +1,10 @@
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+
+# This rule adds a convenient way to update the requirements file.
+# To update the file: `bazelisk run //:py-deps.update`
+compile_pip_requirements(
+    name = "py-deps",
+    timeout = "moderate",
+    requirements_in = "//:requirements.txt",
+    requirements_txt = "//:requirements_lock.txt",
+)

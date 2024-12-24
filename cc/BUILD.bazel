@@ -1,0 +1,71 @@
+# By default ccInfo functions have been included
+cc_library(
+    name = "c_idl",
+    srcs = [
+        "idl/HelloWorldData.h",
+        "idl/HelloWorldData.c",
+    ],
+    deps = ["@cyclonedds"],
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "c_pub",
+    srcs = ["pub.c"],
+    deps = [":c_idl"],
+)
+
+cc_binary(
+    name = "c_sub",
+    srcs = ["sub.c"],
+    deps = [":c_idl"],
+)
+
+## C++
+cc_library(
+    name = "cc_idl",
+    srcs = [
+        "idl/HelloWorldData.hpp",
+        "idl/HelloWorldData.cpp",
+    ],
+    deps = ["@cyclonedds-cxx"],
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "cc_pub",
+    srcs = ["pub.cpp"],
+    deps = [":cc_idl"],
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "cc_sub",
+    srcs = ["sub.cpp"],
+    deps = [":cc_idl"],
+    visibility = ["//visibility:public"],
+)
+
+# Integration Test
+load("@python_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+py_test(
+    name = "integration-tests",
+    srcs = glob(["test/integration/**"]),
+    deps = [
+        requirement("pytest"),
+        requirement("pytest-timeout"),
+        requirement("docker"),
+    ],
+    data= [
+        ":c_sub",
+        ":c_pub",
+        ":cc_pub",
+        ":cc_sub",
+    ],
+    tags = ["no-coverage"],
+    main = "__init__.py",
+    visibility = ["//visibility:public"],
+
+)

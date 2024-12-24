@@ -1,0 +1,63 @@
+"""
+Template for @cyclonedds-cxx//:BUILD.bazel
+"""
+
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+)
+
+cmake(
+    name = "cyclonedds-cxx",
+    build_args = [
+        "--target install",
+        "-j `nproc`",
+    ],
+    cache_entries = {
+        # For a faster build
+        #"BUILD_EXAMPLES": "OFF",
+        "BUILD_DDSPERF": "OFF",
+
+
+        # For features
+        "ENABLE_TYPE_DISCOVERY": "OFF",
+        "ENABLE_TOPIC_DISCOVERY": "OFF",
+        "CMAKE_BUILD_TYPE": "Release",
+
+        # by default disable iceoryx
+        "ENABLE_SHM": "OFF",
+    } | select({
+        "@platforms//cpu:x86_64": {
+            "CMAKE_SYSTEM_PROCESSOR": "x86_64",
+        },
+        "@platforms//cpu:aarch64": {
+            "CMAKE_SYSTEM_PROCESSOR": "aarch64",
+        },
+    }) | select({
+        "@platforms//os:linux": {
+            "CMAKE_SYSTEM_NAME": "Linux",
+        },
+    }),
+    # Use `copts` rather than `CMAKE_C*_FLAGS` for those flags to be able to
+    # use select and set different flags for different compilers
+    copts =  [
+        "-Wno-error",
+        "-w",
+    ],
+    generate_args = ["-GNinja"],
+    lib_source = ":srcs",
+    out_include_dir = "include/ddscxx",
+    out_data_dirs = [
+        "lib/cmake",
+        "lib/pkgconfig",
+    ],
+    out_shared_libs = [
+        "libddscxx.so",
+        "libddscxx.so.0",
+        "libddscxx.so.0.11.0",
+    ],
+    visibility = ["//visibility:public"],
+    deps = ["@cyclonedds"],
+)

@@ -1,0 +1,44 @@
+# Python tasks:
+py-pub:
+  - bazelisk run //python:py_pub
+
+py-sub:
+  - bazelisk run //python:py_sub
+
+py-deps:
+  - bazelisk run //:py-deps.update
+
+py-test:
+  - bazelisk test //python/... --test_output=all --cache_test_results=no
+
+py-integ-test:
+  - bazelisk test //python:integration-tests --test_output=all --cache_test_results=no
+
+py-cov:
+  - bazelisk coverage //python:unit-tests --combined_report=lcov --instrumentation_filter=/python
+  - rm -rf coverage-genhtml 2>/dev/null
+  # depends on lcov, the generated coverage report can be found in ./coverage-genhtml
+  - genhtml --branch-coverage --output coverage-genhtml "$(bazel info output_path)/_coverage/_coverage_report.dat"
+
+clean:
+  - bazelisk clean
+
+# C tasks
+c-pub:
+  - bazelisk run //cc:c_pub
+
+c-sub:
+  - bazelisk run //cc:c_sub
+
+# CPP tasks
+cc-pub:
+  - bazelisk run //cc:cc_pub --verbose_failures
+
+cc-sub:
+  - bazelisk run //cc:cc_sub
+
+cc-integ-test:
+  - bazelisk test //cc:integration-tests --test_output=all --cache_test_results=no
+
+cc-tar:
+  - bazelisk build //pkg:cc_tar --//pkg:pkg_vars="0.0.1"
