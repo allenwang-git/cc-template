@@ -14,10 +14,7 @@ jobs:
     strategy:
       matrix:
         task: [
-          py-test, 
-          py-cov,
-          cc-integ-test,
-          cc-tar
+          build,
         ]
       fail-fast: true
 
@@ -37,5 +34,5 @@ jobs:
           which bazelisk
 
       # Run tasks
-      - name: Run tests
+      - name: Run tasks
         run: ./run ${{ matrix.task }}
