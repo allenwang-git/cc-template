@@ -15,6 +15,7 @@
 
 .bazelisk/
 .bazel/
+bazelisk-amd64.deb
 
 ## VSCode
 .vscode/

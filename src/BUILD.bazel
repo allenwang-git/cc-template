@@ -1,0 +1,17 @@
+# By default ccInfo functions have been included
+## C++
+cc_library(
+    name = "cc-lib",
+    srcs = [
+        "hello.hpp",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "cc-bin",
+    srcs = ["main.cpp"],
+    deps = [":cc-lib"],
+    visibility = ["//visibility:public"],
+)
+
